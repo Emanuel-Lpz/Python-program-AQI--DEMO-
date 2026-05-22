@@ -4,7 +4,11 @@ AQI = {
 
         "Content Type": {
             "type": "dropdown",
-            "description": "Fits the content definition of a Troubleshooting KB.",
+            "description":
+                "Fits the content definition of a Troubleshooting KB.",
+
+            "auto_reject": True,
+
             "options": [
                 ("Fits Troubleshooting KB definition", 5),
                 ("Does not fit Troubleshooting KB definition", 0)
@@ -13,7 +17,11 @@ AQI = {
 
         "Article Uniqueness": {
             "type": "dropdown",
-            "description": "There are no issue duplicates internally or externally.",
+            "description":
+                "There are no issue duplicates internally or externally.",
+
+            "auto_reject": True,
+
             "options": [
                 ("No duplicates found", 5),
                 ("Duplicate issue exists", 0)
@@ -25,7 +33,12 @@ AQI = {
 
         "Sections Filled Out": {
             "type": "dropdown",
-            "description": "Title, Issue Details and Solution completed.",
+
+            "description":
+                "Title, Issue Details and Solution completed.",
+
+            "auto_reject": True,
+
             "options": [
                 ("All required sections completed", 1),
                 ("Missing section(s)", 0)
@@ -34,7 +47,10 @@ AQI = {
 
         "Competence": {
             "type": "dropdown",
-            "description": "Correct grammar, spelling and professional language.",
+
+            "description":
+                "Correct grammar, spelling and professional language.",
+
             "options": [
                 ("Meets requirements", 2),
                 ("Does not meet requirements", 0)
@@ -43,7 +59,10 @@ AQI = {
 
         "Conventions": {
             "type": "dropdown",
-            "description": "Follows KB style conventions.",
+
+            "description":
+                "Follows KB style conventions.",
+
             "options": [
                 ("Follows conventions", 1),
                 ("Does not follow conventions", 0)
@@ -52,7 +71,10 @@ AQI = {
 
         "Links": {
             "type": "checklist",
-            "description": "Links evaluation.",
+
+            "description":
+                "Links evaluation.",
+
             "items": [
                 ("Links available", 1),
                 ("Correct formatting", 1),
@@ -62,7 +84,14 @@ AQI = {
 
         "Images": {
             "type": "checklist",
-            "description": "Images evaluation.",
+
+            "description":
+                "Images evaluation.",
+
+            "auto_reject_items": [
+                "Hosted correctly"
+            ],
+
             "items": [
                 ("Hosted correctly", 1),
                 ("Appropriate to share", 2)
@@ -74,7 +103,12 @@ AQI = {
 
         "Branding": {
             "type": "dropdown",
-            "description": "Branding is correct.",
+
+            "description":
+                "Branding is correct.",
+
+            "auto_reject": True,
+
             "options": [
                 ("Correct branding", 1),
                 ("Incorrect branding", 0)
@@ -83,7 +117,12 @@ AQI = {
 
         "URL": {
             "type": "dropdown",
-            "description": "URL matches title.",
+
+            "description":
+                "URL matches title.",
+
+            "auto_reject": True,
+
             "options": [
                 ("Matches title", 1),
                 ("Does not match title", 0)
@@ -92,7 +131,10 @@ AQI = {
 
         "SEO Keywords": {
             "type": "checklist",
-            "description": "SEO keyword evaluation.",
+
+            "description":
+                "SEO keyword evaluation.",
+
             "items": [
                 ("Relevant keywords", 1),
                 ("Minimum reached", 1),
@@ -102,7 +144,10 @@ AQI = {
 
         "Internal Notes": {
             "type": "dropdown",
-            "description": "Internal notes formatted correctly.",
+
+            "description":
+                "Internal notes formatted correctly.",
+
             "options": [
                 ("Correct formatting", 2),
                 ("Incorrect formatting", 0)
@@ -111,7 +156,14 @@ AQI = {
 
         "Validation Status": {
             "type": "checklist",
-            "description": "Validation status evaluation.",
+
+            "description":
+                "Validation status evaluation.",
+
+            "auto_reject_items": [
+                "Correct status"
+            ],
+
             "items": [
                 ("Correct status", 3),
                 ("Explanation included if needed", 2)
@@ -120,7 +172,10 @@ AQI = {
 
         "Notes ID": {
             "type": "dropdown",
-            "description": "Populated if migrated.",
+
+            "description":
+                "Populated if migrated.",
+
             "options": [
                 ("Populated", 1),
                 ("Not populated", 0)
@@ -129,7 +184,10 @@ AQI = {
 
         "Product Tags": {
             "type": "checklist",
-            "description": "Product tagging.",
+
+            "description":
+                "Product tagging.",
+
             "items": [
                 ("Correct tagging", 1),
                 ("Relevant tagging", 1)
@@ -141,7 +199,10 @@ AQI = {
 
         "Correct Formatting": {
             "type": "dropdown",
-            "description": "Correct error code KB formatting.",
+
+            "description":
+                "Correct error code KB formatting.",
+
             "options": [
                 ("Correct formatting", 1),
                 ("Incorrect formatting", 0)
@@ -150,7 +211,10 @@ AQI = {
 
         "Related & Relevant": {
             "type": "checklist",
-            "description": "Title quality evaluation.",
+
+            "description":
+                "Title quality evaluation.",
+
             "items": [
                 ("Reflects issue discussed", 3),
                 ("Sets expectations", 2),
@@ -162,7 +226,10 @@ AQI = {
 
         "NI Product Related": {
             "type": "dropdown",
-            "description": "NI product referenced.",
+
+            "description":
+                "NI product referenced.",
+
             "options": [
                 ("Product referenced", 2),
                 ("Product not referenced", 0)
@@ -171,7 +238,10 @@ AQI = {
 
         "Character Limit": {
             "type": "dropdown",
-            "description": "75 characters or less preferred.",
+
+            "description":
+                "75 characters or less preferred.",
+
             "options": [
                 ("≤75 characters", 5),
                 (">75 but justified", 3),
@@ -181,7 +251,10 @@ AQI = {
 
         "Capitalization": {
             "type": "dropdown",
-            "description": "APA capitalization.",
+
+            "description":
+                "APA capitalization.",
+
             "options": [
                 ("APA compliant", 2),
                 ("Not APA compliant", 0)
@@ -193,7 +266,10 @@ AQI = {
 
         "Other Sections/Tools": {
             "type": "checklist",
-            "description": "Other sections used correctly.",
+
+            "description":
+                "Other sections used correctly.",
+
             "items": [
                 ("Other section used correctly", 1),
                 ("Additional Information used correctly", 1),
@@ -205,7 +281,10 @@ AQI = {
 
         "Correct Formatting": {
             "type": "dropdown",
-            "description": "Correct error formatting.",
+
+            "description":
+                "Correct error formatting.",
+
             "options": [
                 ("Correct formatting", 2),
                 ("Incorrect formatting", 0)
@@ -214,7 +293,10 @@ AQI = {
 
         "Overview of Scope": {
             "type": "dropdown",
-            "description": "Issue should be clear quickly.",
+
+            "description":
+                "Issue should be clear quickly.",
+
             "options": [
                 ("Complete overview", 4),
                 ("Requires effort to understand", 2),
@@ -224,7 +306,10 @@ AQI = {
 
         "Action that Prompted": {
             "type": "dropdown",
-            "description": "Context of occurrence.",
+
+            "description":
+                "Context of occurrence.",
+
             "options": [
                 ("Complete context", 4),
                 ("Partial context", 2),
@@ -234,7 +319,10 @@ AQI = {
 
         "Environment Details": {
             "type": "dropdown",
-            "description": "Environmental details.",
+
+            "description":
+                "Environmental details.",
+
             "options": [
                 ("Complete details", 4),
                 ("Partial details", 2),
@@ -244,7 +332,10 @@ AQI = {
 
         "Symptoms": {
             "type": "checklist",
-            "description": "Symptoms evaluation.",
+
+            "description":
+                "Symptoms evaluation.",
+
             "items": [
                 ("Clearly understandable", 3),
                 ("Correct formatting", 1)
@@ -253,7 +344,10 @@ AQI = {
 
         "Relevant Information": {
             "type": "dropdown",
-            "description": "Only relevant information included.",
+
+            "description":
+                "Only relevant information included.",
+
             "options": [
                 ("Relevant only", 2),
                 ("Includes unnecessary information", 0)
@@ -265,7 +359,10 @@ AQI = {
 
         "Introduction / Expectations": {
             "type": "dropdown",
-            "description": "Overview of why issue occurs and expected solution.",
+
+            "description":
+                "Overview of why issue occurs and expected solution.",
+
             "options": [
                 ("Complete overview", 3),
                 ("Partial overview", 1),
@@ -275,7 +372,10 @@ AQI = {
 
         "Complete": {
             "type": "dropdown",
-            "description": "Completeness of solution.",
+
+            "description":
+                "Completeness of solution.",
+
             "options": [
                 ("No additional information needed", 8),
                 ("Some information missing", 5),
@@ -286,7 +386,10 @@ AQI = {
 
         "Relevant & Concise": {
             "type": "dropdown",
-            "description": "Appropriate level of detail.",
+
+            "description":
+                "Appropriate level of detail.",
+
             "options": [
                 ("Just enough information", 4),
                 ("Too much information", 0)
@@ -295,7 +398,10 @@ AQI = {
 
         "Formatting": {
             "type": "checklist",
-            "description": "Solution formatting.",
+
+            "description":
+                "Solution formatting.",
+
             "items": [
                 ("Bullets used appropriately", 2),
                 ("Correct ordering", 2),

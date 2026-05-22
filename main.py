@@ -1,20 +1,31 @@
 import sys
 
 from PySide6.QtWidgets import *
+from PySide6.QtGui import QColor
 
 from aqi_data import AQI
-from widgets import DropdownWidget, ChecklistWidget
-from scoring import get_section_score
+from widgets import (
+    DropdownWidget,
+    ChecklistWidget
+)
+
+from scoring import (
+    generate_report,
+    check_auto_rejects
+)
 
 
 class MainWindow(QMainWindow):
 
     def __init__(self):
+
         super().__init__()
 
-        self.setWindowTitle("KB AQI Evaluator")
+        self.setWindowTitle(
+            "KB AQI Evaluator"
+        )
 
-        self.resize(1600, 900)
+        self.resize(1700, 950)
 
         self.section_widgets = {}
 
@@ -26,16 +37,73 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(central)
 
-        layout = QHBoxLayout(central)
+        main_layout = QHBoxLayout(central)
 
         self.tabs = QTabWidget()
 
-        layout.addWidget(self.tabs, 3)
+        main_layout.addWidget(
+            self.tabs,
+            3
+        )
 
-        self.report = QTextEdit()
-        self.report.setReadOnly(True)
+        right_panel = QVBoxLayout()
 
-        layout.addWidget(self.report, 1)
+        main_layout.addLayout(
+            right_panel,
+            1
+        )
+
+        self.report_box = QTextEdit()
+
+        self.report_box.setReadOnly(True)
+
+        right_panel.addWidget(
+            self.report_box
+        )
+
+        self.warning_label = QLabel()
+
+        self.warning_label.setStyleSheet(
+            "color: red; font-weight: bold;"
+        )
+
+        right_panel.addWidget(
+            self.warning_label
+        )
+
+        self.missing_label = QLabel()
+
+        self.missing_label.setStyleSheet(
+            "color: orange;"
+        )
+
+        right_panel.addWidget(
+            self.missing_label
+        )
+
+        generate_btn = QPushButton(
+            "Generate Report"
+        )
+
+        generate_btn.clicked.connect(
+            self.refresh_report
+        )
+
+        right_panel.addWidget(
+            generate_btn
+        )
+
+        copy_btn = QPushButton(
+            "Copy Report"
+        )
+
+        copy_btn.clicked.connect(
+            self.copy_report
+        )
+
+        right_panel.addWidget(
+            copy_btn
+        )
 
         for section_name, section_data in AQI.items():
 
@@ -48,80 +116,130 @@ class MainWindow(QMainWindow):
             for criterion, data in section_data.items():
 
                 if data["type"] == "dropdown":
+
                     widget = DropdownWidget(
                         criterion,
                         data
                     )
+
                 else:
+
                     widget = ChecklistWidget(
                         criterion,
                         data
                     )
 
-                page_layout.addWidget(widget)
+                page_layout.addWidget(
+                    widget
+                )
 
-                self.section_widgets[section_name][criterion] = widget
+                self.section_widgets[
+                    section_name
+                ][criterion] = widget
 
                 self.connect_widget(widget)
 
             page_layout.addStretch()
 
-            self.tabs.addTab(page, section_name)
+            scroll = QScrollArea()
 
-        copy_btn = QPushButton(
-            "Copy Report"
-        )
+            scroll.setWidgetResizable(True)
 
-        copy_btn.clicked.connect(
-            self.copy_report
-        )
+            scroll.setWidget(page)
 
-        layout.addWidget(copy_btn)
+            self.tabs.addTab(
+                scroll,
+                section_name
+            )
 
-        self.refresh()
+        self.refresh_report()
 
     def connect_widget(self, widget):
 
         if hasattr(widget, "combo"):
+
             widget.combo.currentIndexChanged.connect(
-                self.refresh
+                self.refresh_report
             )
 
         if hasattr(widget, "checks"):
-            for cb, _ in widget.checks:
+
+            for cb, _, _ in widget.checks:
+
                 cb.stateChanged.connect(
-                    self.refresh
+                    self.refresh_report
                 )
 
-    def refresh(self):
+    def count_missing_fields(self):
 
-        total = 0
+        missing = 0
 
-        lines = []
+        for _, widgets in self.section_widgets.items():
 
-        for section, widgets in self.section_widgets.items():
+            for _, widget in widgets.items():
 
-            score = get_section_score(widgets)
+                if not widget.is_complete():
 
-            total += score
+                    missing += 1
 
-            lines.append(
-                f"{section}: {score}"
+        return missing
+
+    def refresh_report(self):
+
+        report = generate_report(
+            self.section_widgets,
+            AQI
+        )
+
+        self.report_box.setText(
+            report
+        )
+
+        errors = check_auto_rejects(
+            self.section_widgets,
+            AQI
+        )
+
+        if errors:
+
+            text = (
+                "🚨 AUTO-REJECT WARNING\n\n"
+                "KB does not comply "
+                "with KCS requirements.\n\n"
+                "Issues:\n"
             )
 
-        lines.insert(
-            0,
-            f"TOTAL SCORE: {total}/100\n"
-        )
+            for err in errors:
 
-        self.report.setText(
-            "\n".join(lines)
-        )
+                text += f"• {err}\n"
+
+            self.warning_label.setText(
+                text
+            )
+
+        else:
+
+            self.warning_label.setText("")
+
+        missing = self.count_missing_fields()
+
+        if missing > 0:
+
+            self.missing_label.setText(
+                f"⚠ {missing} field(s) "
+                f"have not been evaluated."
+            )
+
+        else:
+
+            self.missing_label.setText(
+                ""
+            )
 
     def copy_report(self):
 
         QApplication.clipboard().setText(
-            self.report.toPlainText()
+            self.report_box.toPlainText()
         )
 
 
