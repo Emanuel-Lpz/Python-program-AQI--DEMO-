@@ -26,7 +26,7 @@ class DropdownWidget(QWidget):
         title_text = title
 
         if data.get("auto_reject"):
-            title_text += " *"
+            title_text = title
 
         title_label = QLabel(
             f"<b>{title_text}</b>"
@@ -142,7 +142,7 @@ class ChecklistWidget(QWidget):
         if data.get(
             "auto_reject_items"
         ):
-            title_text += " *"
+            title_text =title
 
         title_label = QLabel(
             f"<b>{title_text}</b>"
@@ -194,7 +194,7 @@ class ChecklistWidget(QWidget):
             display_text = text
 
             if text in auto_items:
-                display_text += "*"
+                display_text = text
 
             cb = QCheckBox(
                 f"{display_text} ({score:+d})"
