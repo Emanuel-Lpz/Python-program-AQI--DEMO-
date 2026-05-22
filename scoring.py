@@ -1,4 +1,8 @@
 def get_max_score(data):
+    """
+    Returns the maximum obtainable score
+    for a criterion.
+    """
 
     if data["type"] == "dropdown":
 
@@ -16,10 +20,17 @@ def get_max_score(data):
     )
 
 
+# --------------------------------------------------
+# AUTO REJECT CHECKS
+# --------------------------------------------------
+
 def check_auto_rejects(
     section_widgets,
     aqi
 ):
+    """
+    Returns a list of all auto-reject failures.
+    """
 
     errors = []
 
@@ -29,82 +40,268 @@ def check_auto_rejects(
 
             data = aqi[section][criterion]
 
-            if data["type"] == "dropdown":
+            # ----------------------------------
+            # Dropdown auto reject
+            # ----------------------------------
 
-                if data.get("auto_reject"):
+            if (
+                data["type"] == "dropdown"
+                and data.get("auto_reject")
+            ):
 
-                    if widget.get_score() < get_max_score(data):
+                current_score = widget.get_score()
 
-                        errors.append(
-                            f"{section} → {criterion}"
-                        )
-
-            if data["type"] == "checklist":
-
-                auto_items = data.get(
-                    "auto_reject_items",
-                    []
+                max_score = get_max_score(
+                    data
                 )
 
-                for cb, text, _ in widget.checks:
+                if current_score < max_score:
 
-                    if text in auto_items:
+                    errors.append(
+                        f"{section} → {criterion}"
+                    )
 
-                        if not cb.isChecked():
+            # ----------------------------------
+            # Checklist auto reject
+            # ----------------------------------
 
-                            errors.append(
-                                f"{section} → {criterion} → {text}"
-                            )
+            if (
+                data["type"] == "checklist"
+                and data.get(
+                    "auto_reject_items"
+                )
+            ):
+
+                auto_items = data[
+                    "auto_reject_items"
+                ]
+
+                for (
+                    cb,
+                    text,
+                    _
+                ) in widget.checks:
+
+                    if (
+                        text in auto_items
+                        and not cb.isChecked()
+                    ):
+
+                        errors.append(
+                            f"{section} → "
+                            f"{criterion} → "
+                            f"{text}"
+                        )
 
     return errors
 
+
+# --------------------------------------------------
+# SECTION SCORE
+# --------------------------------------------------
+
+def get_section_score(
+    widgets
+):
+    score = 0
+
+    for widget in widgets.values():
+
+        score += widget.get_score()
+
+    return score
+
+
+# --------------------------------------------------
+# SECTION MAX SCORE
+# --------------------------------------------------
+
+def get_section_max_score(
+    section_name,
+    aqi
+):
+    total = 0
+
+    for criterion_data in aqi[
+        section_name
+    ].values():
+
+        total += get_max_score(
+            criterion_data
+        )
+
+    return total
+
+
+# --------------------------------------------------
+# TOTAL SCORE
+# --------------------------------------------------
+
+def get_total_score(
+    section_widgets
+):
+    total = 0
+
+    for widgets in section_widgets.values():
+
+        total += get_section_score(
+            widgets
+        )
+
+    return total
+
+
+# --------------------------------------------------
+# REPORT
+# --------------------------------------------------
 
 def generate_report(
     section_widgets,
     aqi
 ):
+    """
+    Generates the detailed
+    clipboard report.
+    """
 
     total_score = 0
 
-    section_lines = []
+    report_lines = []
 
-    for section, widgets in section_widgets.items():
+    # ----------------------------------
+    # Calculate total
+    # ----------------------------------
+
+    for widgets in section_widgets.values():
+
+        total_score += get_section_score(
+            widgets
+        )
+
+    report_lines.append(
+        f"AQI SCORE: {total_score}/100"
+    )
+
+    report_lines.append("")
+
+    # ----------------------------------
+    # Section details
+    # ----------------------------------
+
+    for (
+        section_name,
+        widgets
+    ) in section_widgets.items():
 
         section_score = 0
 
-        max_section_score = 0
+        section_max = 0
 
-        criterion_lines = []
+        for (
+            criterion,
+            widget
+        ) in widgets.items():
 
-        for criterion, widget in widgets.items():
-
-            data = aqi[section][criterion]
+            criterion_data = aqi[
+                section_name
+            ][criterion]
 
             score = widget.get_score()
 
-            max_score = get_max_score(data)
+            max_score = get_max_score(
+                criterion_data
+            )
 
             section_score += score
 
-            max_section_score += max_score
+            section_max += max_score
 
-            criterion_lines.append(
-                f"- {criterion}: {score}/{max_score}"
+        report_lines.append(
+            f"{section_name} "
+            f"({section_score}/{section_max})"
+        )
+
+        # --------------------------
+        # Criterion details
+        # --------------------------
+
+        for (
+            criterion,
+            widget
+        ) in widgets.items():
+
+            criterion_data = aqi[
+                section_name
+            ][criterion]
+
+            score = widget.get_score()
+
+            max_score = get_max_score(
+                criterion_data
             )
+
+            report_lines.append(
+                f"- {criterion}: "
+                f"{score}/{max_score}"
+            )
+
+        report_lines.append("")
+
+    return "\n".join(
+        report_lines
+    )
+
+
+# --------------------------------------------------
+# DASHBOARD SUMMARY
+# --------------------------------------------------
+
+def generate_dashboard(
+    section_widgets,
+    aqi
+):
+    """
+    Generates the compact
+    score panel shown in UI.
+    """
+
+    lines = []
+
+    total_score = 0
+
+    total_max = 0
+
+    for (
+        section_name,
+        widgets
+    ) in section_widgets.items():
+
+        section_score = get_section_score(
+            widgets
+        )
+
+        section_max = (
+            get_section_max_score(
+                section_name,
+                aqi
+            )
+        )
 
         total_score += section_score
 
-        block = (
-            f"{section} "
-            f"({section_score}/{max_section_score})\n"
-            + "\n".join(criterion_lines)
+        total_max += section_max
+
+        lines.append(
+            f"{section_name:<15}"
+            f"{section_score}/{section_max}"
         )
 
-        section_lines.append(block)
-
-    report = (
-        f"AQI SCORE: {total_score}/100\n\n"
-        + "\n\n".join(section_lines)
+    lines.append("")
+    lines.append(
+        f"TOTAL SCORE: "
+        f"{total_score}/{total_max}"
     )
 
-    return report
+    return "\n".join(
+        lines
+    )

@@ -4,6 +4,7 @@ AQI = {
 
         "Content Type": {
             "type": "dropdown",
+
             "description":
                 "Fits the content definition of a Troubleshooting KB.",
 
@@ -17,8 +18,9 @@ AQI = {
 
         "Article Uniqueness": {
             "type": "dropdown",
+
             "description":
-                "There are no issue duplicates internally or externally.",
+                "There are no duplicate articles internally or externally.",
 
             "auto_reject": True,
 
@@ -35,7 +37,7 @@ AQI = {
             "type": "dropdown",
 
             "description":
-                "Title, Issue Details and Solution completed.",
+                "Title, Issue Details, and Solution are completed.",
 
             "auto_reject": True,
 
@@ -49,7 +51,7 @@ AQI = {
             "type": "dropdown",
 
             "description":
-                "Correct grammar, spelling and professional language.",
+                "Correct grammar, spelling, and professional language.",
 
             "options": [
                 ("Meets requirements", 2),
@@ -74,6 +76,10 @@ AQI = {
 
             "description":
                 "Links evaluation.",
+
+            "auto_reject_items": [
+                "Correct destination and active"
+            ],
 
             "items": [
                 ("Links available", 1),
@@ -135,6 +141,11 @@ AQI = {
             "description":
                 "SEO keyword evaluation.",
 
+            "auto_reject_items": [
+                "Minimum reached",
+                "Comma separated"
+            ],
+
             "items": [
                 ("Relevant keywords", 1),
                 ("Minimum reached", 1),
@@ -186,7 +197,7 @@ AQI = {
             "type": "checklist",
 
             "description":
-                "Product tagging.",
+                "Product tagging evaluation.",
 
             "items": [
                 ("Correct tagging", 1),
@@ -201,7 +212,9 @@ AQI = {
             "type": "dropdown",
 
             "description":
-                "Correct error code KB formatting.",
+                "Correct KB title formatting.",
+
+            "auto_reject": True,
 
             "options": [
                 ("Correct formatting", 1),
@@ -268,7 +281,7 @@ AQI = {
             "type": "checklist",
 
             "description":
-                "Other sections used correctly.",
+                "Other sections and tools used correctly.",
 
             "items": [
                 ("Other section used correctly", 1),
@@ -308,7 +321,7 @@ AQI = {
             "type": "dropdown",
 
             "description":
-                "Context of occurrence.",
+                "Context of occurrence is provided.",
 
             "options": [
                 ("Complete context", 4),
@@ -321,7 +334,7 @@ AQI = {
             "type": "dropdown",
 
             "description":
-                "Environmental details.",
+                "Relevant environmental details provided.",
 
             "options": [
                 ("Complete details", 4),
@@ -338,7 +351,7 @@ AQI = {
 
             "items": [
                 ("Clearly understandable", 3),
-                ("Correct formatting", 1)
+                ("Correct formatting (bulleted or not)", 1)
             ]
         },
 
@@ -361,7 +374,7 @@ AQI = {
             "type": "dropdown",
 
             "description":
-                "Overview of why issue occurs and expected solution.",
+                "Overview of why the issue occurs and what the solution accomplishes.",
 
             "options": [
                 ("Complete overview", 3),
@@ -374,7 +387,7 @@ AQI = {
             "type": "dropdown",
 
             "description":
-                "Completeness of solution.",
+                "Completeness of the solution.",
 
             "options": [
                 ("No additional information needed", 8),
@@ -400,7 +413,7 @@ AQI = {
             "type": "checklist",
 
             "description":
-                "Solution formatting.",
+                "Solution formatting evaluation.",
 
             "items": [
                 ("Bullets used appropriately", 2),

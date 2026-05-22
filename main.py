@@ -1,9 +1,21 @@
 import sys
 
-from PySide6.QtWidgets import *
-from PySide6.QtGui import QColor
+from PySide6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QHBoxLayout,
+    QVBoxLayout,
+    QTabWidget,
+    QTextEdit,
+    QLabel,
+    QPushButton,
+    QScrollArea,
+    QFrame
+)
 
 from aqi_data import AQI
+
 from widgets import (
     DropdownWidget,
     ChecklistWidget
@@ -11,7 +23,9 @@ from widgets import (
 
 from scoring import (
     generate_report,
-    check_auto_rejects
+    generate_dashboard,
+    check_auto_rejects,
+    get_total_score
 )
 
 
@@ -25,19 +39,34 @@ class MainWindow(QMainWindow):
             "KB AQI Evaluator"
         )
 
-        self.resize(1700, 950)
+        self.resize(
+            1800,
+            1000
+        )
 
         self.section_widgets = {}
 
         self.build_ui()
 
+    # ==================================================
+    # UI
+    # ==================================================
+
     def build_ui(self):
 
         central = QWidget()
 
-        self.setCentralWidget(central)
+        self.setCentralWidget(
+            central
+        )
 
-        main_layout = QHBoxLayout(central)
+        main_layout = QHBoxLayout(
+            central
+        )
+
+        # ------------------------------------------
+        # LEFT SIDE (AQI TABS)
+        # ------------------------------------------
 
         self.tabs = QTabWidget()
 
@@ -46,6 +75,10 @@ class MainWindow(QMainWindow):
             3
         )
 
+        # ------------------------------------------
+        # RIGHT SIDE
+        # ------------------------------------------
+
         right_panel = QVBoxLayout()
 
         main_layout.addLayout(
@@ -53,33 +86,129 @@ class MainWindow(QMainWindow):
             1
         )
 
-        self.report_box = QTextEdit()
+        # ------------------------------------------
+        # SCORE HEADER
+        # ------------------------------------------
 
-        self.report_box.setReadOnly(True)
+        self.score_label = QLabel(
+            "AQI SCORE: 0/100"
+        )
+
+        self.score_label.setStyleSheet(
+            """
+            font-size:18px;
+            font-weight:bold;
+            padding:6px;
+            """
+        )
 
         right_panel.addWidget(
-            self.report_box
+            self.score_label
         )
+
+        # ------------------------------------------
+        # DASHBOARD
+        # ------------------------------------------
+
+        dashboard_title = QLabel(
+            "<b>Dashboard</b>"
+        )
+
+        right_panel.addWidget(
+            dashboard_title
+        )
+
+        self.dashboard_box = QTextEdit()
+
+        self.dashboard_box.setReadOnly(
+            True
+        )
+
+        self.dashboard_box.setMaximumHeight(
+            220
+        )
+
+        right_panel.addWidget(
+            self.dashboard_box
+        )
+
+        # ------------------------------------------
+        # AUTO REJECT
+        # ------------------------------------------
 
         self.warning_label = QLabel()
 
+        self.warning_label.setWordWrap(
+            True
+        )
+
         self.warning_label.setStyleSheet(
-            "color: red; font-weight: bold;"
+            """
+            color:#B22222;
+            font-weight:bold;
+            """
         )
 
         right_panel.addWidget(
             self.warning_label
         )
 
+        # ------------------------------------------
+        # MISSING FIELDS
+        # ------------------------------------------
+
         self.missing_label = QLabel()
 
+        self.missing_label.setWordWrap(
+            True
+        )
+
         self.missing_label.setStyleSheet(
-            "color: orange;"
+            """
+            color:orange;
+            font-weight:bold;
+            """
         )
 
         right_panel.addWidget(
             self.missing_label
         )
+
+        line = QFrame()
+
+        line.setFrameShape(
+            QFrame.Shape.HLine
+        )
+
+        right_panel.addWidget(
+            line
+        )
+
+        # ------------------------------------------
+        # REPORT
+        # ------------------------------------------
+
+        report_title = QLabel(
+            "<b>Detailed Report</b>"
+        )
+
+        right_panel.addWidget(
+            report_title
+        )
+
+        self.report_box = QTextEdit()
+
+        self.report_box.setReadOnly(
+            True
+        )
+
+        right_panel.addWidget(
+            self.report_box
+        )
+
+        # ------------------------------------------
+        # BUTTONS
+        # ------------------------------------------
 
         generate_btn = QPushButton(
             "Generate Report"
@@ -105,17 +234,34 @@ class MainWindow(QMainWindow):
             copy_btn
         )
 
-        for section_name, section_data in AQI.items():
+        # ==================================================
+        # BUILD TABS
+        # ==================================================
+
+        for (
+            section_name,
+            section_data
+        ) in AQI.items():
 
             page = QWidget()
 
-            page_layout = QVBoxLayout(page)
+            page_layout = QVBoxLayout(
+                page
+            )
 
-            self.section_widgets[section_name] = {}
+            self.section_widgets[
+                section_name
+            ] = {}
 
-            for criterion, data in section_data.items():
+            for (
+                criterion,
+                data
+            ) in section_data.items():
 
-                if data["type"] == "dropdown":
+                if (
+                    data["type"]
+                    == "dropdown"
+                ):
 
                     widget = DropdownWidget(
                         criterion,
@@ -137,15 +283,21 @@ class MainWindow(QMainWindow):
                     section_name
                 ][criterion] = widget
 
-                self.connect_widget(widget)
+                self.connect_widget(
+                    widget
+                )
 
             page_layout.addStretch()
 
             scroll = QScrollArea()
 
-            scroll.setWidgetResizable(True)
+            scroll.setWidgetResizable(
+                True
+            )
 
-            scroll.setWidget(page)
+            scroll.setWidget(
+                page
+            )
 
             self.tabs.addTab(
                 scroll,
@@ -154,46 +306,137 @@ class MainWindow(QMainWindow):
 
         self.refresh_report()
 
-    def connect_widget(self, widget):
+    # ==================================================
+    # SIGNALS
+    # ==================================================
 
-        if hasattr(widget, "combo"):
+    def connect_widget(
+        self,
+        widget
+    ):
+
+        if hasattr(
+            widget,
+            "combo"
+        ):
 
             widget.combo.currentIndexChanged.connect(
                 self.refresh_report
             )
 
-        if hasattr(widget, "checks"):
+        if hasattr(
+            widget,
+            "checks"
+        ):
 
-            for cb, _, _ in widget.checks:
+            for (
+                cb,
+                _,
+                _
+            ) in widget.checks:
 
                 cb.stateChanged.connect(
                     self.refresh_report
                 )
 
-    def count_missing_fields(self):
+    # ==================================================
+    # MISSING FIELDS
+    # ==================================================
+
+    def count_missing_fields(
+        self
+    ):
 
         missing = 0
 
-        for _, widgets in self.section_widgets.items():
+        for widgets in (
+            self.section_widgets.values()
+        ):
 
-            for _, widget in widgets.items():
+            for widget in (
+                widgets.values()
+            ):
 
-                if not widget.is_complete():
+                if (
+                    not widget.is_complete()
+                ):
 
                     missing += 1
 
         return missing
 
-    def refresh_report(self):
+    # ==================================================
+    # SCORE COLOR
+    # ==================================================
+
+    def update_score_color(
+        self,
+        score
+    ):
+
+        if score >= 95:
+
+            color = "#228B22"
+
+        elif score >= 85:
+
+            color = "#DAA520"
+
+        else:
+
+            color = "#B22222"
+
+        self.score_label.setStyleSheet(
+            f"""
+            color:{color};
+            font-size:18px;
+            font-weight:bold;
+            padding:6px;
+            """
+        )
+
+    # ==================================================
+    # REFRESH
+    # ==================================================
+
+    def refresh_report(
+        self
+    ):
 
         report = generate_report(
             self.section_widgets,
             AQI
         )
 
+        dashboard = generate_dashboard(
+            self.section_widgets,
+            AQI
+        )
+
+        total_score = get_total_score(
+            self.section_widgets
+        )
+
+        self.score_label.setText(
+            f"AQI SCORE: "
+            f"{total_score}/100"
+        )
+
+        self.update_score_color(
+            total_score
+        )
+
         self.report_box.setText(
             report
         )
+
+        self.dashboard_box.setText(
+            dashboard
+        )
+
+        # ----------------------------------
+        # Auto Reject
+        # ----------------------------------
 
         errors = check_auto_rejects(
             self.section_widgets,
@@ -204,14 +447,17 @@ class MainWindow(QMainWindow):
 
             text = (
                 "🚨 AUTO-REJECT WARNING\n\n"
-                "KB does not comply "
-                "with KCS requirements.\n\n"
+                "This KB does not currently "
+                "comply with mandatory AQI/KCS "
+                "requirements.\n\n"
                 "Issues:\n"
             )
 
             for err in errors:
 
-                text += f"• {err}\n"
+                text += (
+                    f"• {err}\n"
+                )
 
             self.warning_label.setText(
                 text
@@ -219,11 +465,19 @@ class MainWindow(QMainWindow):
 
         else:
 
-            self.warning_label.setText("")
+            self.warning_label.setText(
+                ""
+            )
 
-        missing = self.count_missing_fields()
+        # ----------------------------------
+        # Missing Fields
+        # ----------------------------------
 
-        if missing > 0:
+        missing = (
+            self.count_missing_fields()
+        )
+
+        if missing:
 
             self.missing_label.setText(
                 f"⚠ {missing} field(s) "
@@ -233,17 +487,29 @@ class MainWindow(QMainWindow):
         else:
 
             self.missing_label.setText(
-                ""
+                "✓ All fields evaluated."
             )
 
-    def copy_report(self):
+    # ==================================================
+    # COPY REPORT
+    # ==================================================
+
+    def copy_report(
+        self
+    ):
 
         QApplication.clipboard().setText(
             self.report_box.toPlainText()
         )
 
 
-app = QApplication(sys.argv)
+# ======================================================
+# MAIN
+# ======================================================
+
+app = QApplication(
+    sys.argv
+)
 
 window = MainWindow()
 
