@@ -1,5 +1,6 @@
 import sys
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -121,11 +122,18 @@ class MainWindow(QMainWindow):
             "AQI SCORE: 0/100"
         )
 
+        self.score_label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter
+        )
+
         self.score_label.setStyleSheet(
             """
-            font-size:18px;
+            font-size:28px;
             font-weight:bold;
-            padding:6px;
+            padding:12px;
+            border:2px solid #444;
+            border-radius:12px;
+            background-color:#161616;
             """
         )
 
@@ -408,9 +416,12 @@ class MainWindow(QMainWindow):
         self.score_label.setStyleSheet(
             f"""
             color:{color};
-            font-size:18px;
+            font-size:28px;
             font-weight:bold;
-            padding:6px;
+            padding:12px;
+            border:2px solid #444;
+            border-radius:12px;
+            background-color:#161616;
             """
         )
 
