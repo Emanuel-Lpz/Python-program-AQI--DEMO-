@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QLabel,
     QPushButton,
+    QCheckBox,
     QMessageBox,
     QScrollArea,
     QFrame
@@ -133,32 +134,6 @@ class MainWindow(QMainWindow):
         )
 
         # ------------------------------------------
-        # DASHBOARD
-        # ------------------------------------------
-
-        dashboard_title = QLabel(
-            "<b>Dashboard</b>"
-        )
-
-        right_panel.addWidget(
-            dashboard_title
-        )
-
-        self.dashboard_box = QTextEdit()
-
-        self.dashboard_box.setReadOnly(
-            True
-        )
-
-        self.dashboard_box.setMaximumHeight(
-            220
-        )
-
-        right_panel.addWidget(
-            self.dashboard_box
-        )
-
-        # ------------------------------------------
         # AUTO REJECT
         # ------------------------------------------
 
@@ -214,12 +189,34 @@ class MainWindow(QMainWindow):
         # REPORT
         # ------------------------------------------
 
-        report_title = QLabel(
-            "<b>Detailed Report</b>"
+        report_header = QHBoxLayout()
+
+        self.report_title = QLabel(
+            "<b>Generated Report</b>"
         )
 
-        right_panel.addWidget(
-            report_title
+        self.summary_checkbox = QCheckBox(
+            "Summarized"
+        )
+
+        self.summary_checkbox.setChecked(False)
+
+        self.summary_checkbox.toggled.connect(
+            self.update_report_view
+        )
+
+        report_header.addWidget(
+            self.report_title
+        )
+
+        report_header.addStretch()
+
+        report_header.addWidget(
+            self.summary_checkbox
+        )
+
+        right_panel.addLayout(
+            report_header
         )
 
         self.report_box = QTextEdit()
@@ -452,13 +449,10 @@ class MainWindow(QMainWindow):
             total_score
         )
 
-        self.report_box.setText(
-            report
-        )
+        self.detailed_text = report
+        self.summary_text = dashboard
 
-        self.dashboard_box.setText(
-            dashboard
-        )
+        self.update_report_view()
 
         # ----------------------------------
         # Auto Reject
@@ -526,6 +520,22 @@ class MainWindow(QMainWindow):
 
         QApplication.clipboard().setText(
             self.report_box.toPlainText()
+        )
+
+    # ==================================================
+    # VIEW TOGGLE
+    # ==================================================
+
+    def update_report_view(
+        self
+    ):
+
+        show_summary = self.summary_checkbox.isChecked()
+
+        self.report_box.setText(
+            self.summary_text
+            if show_summary
+            else self.detailed_text
         )
 
     # ==================================================
