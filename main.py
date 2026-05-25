@@ -155,37 +155,6 @@ class MainWindow(QMainWindow):
         )
 
         # ------------------------------------------
-        # MISSING FIELDS
-        # ------------------------------------------
-
-        self.missing_label = QLabel()
-
-        self.missing_label.setWordWrap(
-            True
-        )
-
-        self.missing_label.setStyleSheet(
-            """
-            color:orange;
-            font-weight:bold;
-            """
-        )
-
-        right_panel.addWidget(
-            self.missing_label
-        )
-
-        line = QFrame()
-
-        line.setFrameShape(
-            QFrame.Shape.HLine
-        )
-
-        right_panel.addWidget(
-            line
-        )
-
-        # ------------------------------------------
         # REPORT
         # ------------------------------------------
 
@@ -219,6 +188,16 @@ class MainWindow(QMainWindow):
             report_header
         )
 
+        line = QFrame()
+
+        line.setFrameShape(
+            QFrame.Shape.HLine
+        )
+
+        right_panel.addWidget(
+            line
+        )
+
         self.report_box = QTextEdit()
 
         self.report_box.setReadOnly(
@@ -227,6 +206,23 @@ class MainWindow(QMainWindow):
 
         right_panel.addWidget(
             self.report_box
+        )
+
+        self.missing_label = QLabel()
+
+        self.missing_label.setWordWrap(
+            True
+        )
+
+        self.missing_label.setStyleSheet(
+            """
+            color:orange;
+            font-weight:bold;
+            """
+        )
+
+        right_panel.addWidget(
+            self.missing_label
         )
 
         # ------------------------------------------
