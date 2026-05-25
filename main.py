@@ -510,12 +510,26 @@ class MainWindow(QMainWindow):
 
         if missing:
 
+            self.missing_label.setStyleSheet(
+                """
+                color:orange;
+                font-weight:bold;
+                """
+            )
+
             self.missing_label.setText(
                 f"⚠ {missing} field(s) "
                 f"have not been evaluated."
             )
 
         else:
+
+            self.missing_label.setStyleSheet(
+                """
+                color:#00AD7C;
+                font-weight:bold;
+                """
+            )
 
             self.missing_label.setText(
                 "✓ All fields evaluated."
