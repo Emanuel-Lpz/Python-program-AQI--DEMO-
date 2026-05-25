@@ -142,16 +142,16 @@ class MainWindow(QMainWindow):
         )
 
         # ------------------------------------------
-        # AUTO REJECT
+        # MISSING FIELDS
         # ------------------------------------------
 
-        self.warning_label = QLabel()
+        self.missing_label = QLabel()
 
-        self.warning_label.setWordWrap(
+        self.missing_label.setWordWrap(
             True
         )
 
-        self.warning_label.setStyleSheet(
+        self.missing_label.setStyleSheet(
             """
             color:orange;
             font-weight:bold;
@@ -159,7 +159,7 @@ class MainWindow(QMainWindow):
         )
 
         right_panel.addWidget(
-            self.warning_label
+            self.missing_label
         )
 
         # ------------------------------------------
@@ -216,23 +216,6 @@ class MainWindow(QMainWindow):
             self.report_box
         )
 
-        self.missing_label = QLabel()
-
-        self.missing_label.setWordWrap(
-            True
-        )
-
-        self.missing_label.setStyleSheet(
-            """
-            color:orange;
-            font-weight:bold;
-            """
-        )
-
-        right_panel.addWidget(
-            self.missing_label
-        )
-
         # ------------------------------------------
         # BUTTONS
         # ------------------------------------------
@@ -247,6 +230,27 @@ class MainWindow(QMainWindow):
 
         right_panel.addWidget(
             copy_btn
+        )
+
+        # ------------------------------------------
+        # AUTO REJECT
+        # ------------------------------------------
+
+        self.warning_label = QLabel()
+
+        self.warning_label.setWordWrap(
+            True
+        )
+
+        self.warning_label.setStyleSheet(
+            """
+            color:orange;
+            font-weight:bold;
+            """
+        )
+
+        right_panel.addWidget(
+            self.warning_label
         )
 
         reset_btn = QPushButton(
