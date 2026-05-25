@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
 
         self.warning_label.setStyleSheet(
             """
-            color:#B22222;
+            color:orange;
             font-weight:bold;
             """
         )
