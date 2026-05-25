@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QLabel,
     QPushButton,
+    QMessageBox,
     QScrollArea,
     QFrame
 )
@@ -68,10 +69,35 @@ class MainWindow(QMainWindow):
         # LEFT SIDE (AQI TABS)
         # ------------------------------------------
 
+        left_panel = QVBoxLayout()
+
         self.tabs = QTabWidget()
 
-        main_layout.addWidget(
+        left_panel.addWidget(
             self.tabs,
+            1
+        )
+
+        left_panel.addStretch()
+
+        self.help_label = QLabel(
+            "Green text highlights mandatory criteria that may generate an Auto-reject"
+        )
+
+        self.help_label.setWordWrap(True)
+
+        self.help_label.setStyleSheet(
+            "color: gray; font-size:11px; padding:2px 4px 2px 4px; margin:0;"
+        )
+
+        self.help_label.setMaximumHeight(24)
+
+        left_panel.addWidget(
+            self.help_label
+        )
+
+        main_layout.addLayout(
+            left_panel,
             3
         )
 
@@ -210,18 +236,6 @@ class MainWindow(QMainWindow):
         # BUTTONS
         # ------------------------------------------
 
-        generate_btn = QPushButton(
-            "Generate Report"
-        )
-
-        generate_btn.clicked.connect(
-            self.refresh_report
-        )
-
-        right_panel.addWidget(
-            generate_btn
-        )
-
         copy_btn = QPushButton(
             "Copy Report"
         )
@@ -232,6 +246,18 @@ class MainWindow(QMainWindow):
 
         right_panel.addWidget(
             copy_btn
+        )
+
+        reset_btn = QPushButton(
+            "Reset AQI"
+        )
+
+        reset_btn.clicked.connect(
+            self.reset_aqi
+        )
+
+        right_panel.addWidget(
+            reset_btn
         )
 
         # ==================================================
@@ -501,6 +527,42 @@ class MainWindow(QMainWindow):
         QApplication.clipboard().setText(
             self.report_box.toPlainText()
         )
+
+    # ==================================================
+    # RESET
+    # ==================================================
+
+    def reset_aqi(
+        self
+    ):
+
+        answer = QMessageBox.question(
+            self,
+            "Confirm Reset",
+            "Are you sure you want to reset the AQI evaluation?\nAll selections will be cleared.",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            QMessageBox.StandardButton.No
+        )
+
+        if answer != QMessageBox.StandardButton.Yes:
+            return
+
+        for widgets in self.section_widgets.values():
+
+            for widget in widgets.values():
+
+                if hasattr(widget, "combo"):
+
+                    widget.combo.setCurrentIndex(0)
+
+                if hasattr(widget, "checks"):
+
+                    for cb, _, _ in widget.checks:
+
+                        cb.setChecked(False)
+
+        self.tabs.setCurrentIndex(0)
+        self.refresh_report()
 
 
 # ======================================================
