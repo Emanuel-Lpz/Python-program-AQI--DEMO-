@@ -72,6 +72,9 @@ def check_auto_rejects(
                 )
             ):
 
+                if getattr(widget, "is_not_applicable", lambda: False)():
+                    continue
+
                 auto_items = data[
                     "auto_reject_items"
                 ]

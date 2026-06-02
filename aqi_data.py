@@ -98,6 +98,11 @@ AQI = {
                 "Hosted correctly"
             ],
 
+            "not_applicable": (
+                "The KB does not include images",
+                3
+            ),
+
             "items": [
                 ("Hosted correctly", 1),
                 ("Appropriate to share", 2)
@@ -416,7 +421,7 @@ AQI = {
                 "Solution formatting evaluation.",
 
             "items": [
-                ("Bullets used appropriately", 2),
+                ("Bullets/Numbers used appropriately", 2),
                 ("Correct ordering", 2),
                 ("Predetermined text used", 1),
                 ("Wall of text", -2)

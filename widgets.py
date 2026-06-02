@@ -271,6 +271,8 @@ class ChecklistWidget(QWidget):
         self.note = None
 
         self.checks = []
+        self.not_applicable_checkbox = None
+        self.not_applicable_data = data.get("not_applicable")
 
         layout = QVBoxLayout(self)
 
@@ -325,6 +327,19 @@ class ChecklistWidget(QWidget):
 
         layout.addWidget(desc)
 
+        if self.not_applicable_data:
+            na_label, na_score = self.not_applicable_data
+            self.not_applicable_checkbox = QCheckBox(
+                f"{na_label} ({na_score:+d})"
+            )
+            self.not_applicable_checkbox.setStyleSheet(
+                "font-weight:bold;"
+            )
+            self.not_applicable_checkbox.toggled.connect(
+                self.on_not_applicable_toggled
+            )
+            layout.addWidget(self.not_applicable_checkbox)
+
         # ----------------------------
         # Checklist items
         # ----------------------------
@@ -345,17 +360,21 @@ class ChecklistWidget(QWidget):
                 f"{display_text} ({score:+d})"
             )
 
+            style = ""
+
+            if self.not_applicable_data:
+                style += "margin-left:18px;"
+
             if text in auto_items:
-
-                cb.setStyleSheet(
-                    f"color:{AUTO_REJECT_COLOR};"
-                )
-
+                style += f"color:{AUTO_REJECT_COLOR};"
                 cb.setToolTip(
                     "AUTO-REJECT item.\n\n"
                     "If this checkbox is not satisfied "
                     "the KB must be rejected."
                 )
+
+            if style:
+                cb.setStyleSheet(style)
 
             layout.addWidget(cb)
 
@@ -372,6 +391,9 @@ class ChecklistWidget(QWidget):
     # --------------------------------
 
     def get_score(self):
+
+        if self.is_not_applicable():
+            return self.not_applicable_data[1]
 
         score = 0
 
@@ -421,13 +443,32 @@ class ChecklistWidget(QWidget):
     # Missing field check
     # --------------------------------
 
+    def is_not_applicable(self):
+
+        return (
+            self.not_applicable_checkbox is not None
+            and self.not_applicable_checkbox.isChecked()
+        )
+
     def is_complete(self):
+
+        if self.is_not_applicable():
+            return True
 
         return any(
             cb.isChecked()
             for cb, _, _
             in self.checks
         )
+
+    def on_not_applicable_toggled(self, checked):
+
+        for cb, _, _ in self.checks:
+            cb.setVisible(not checked)
+            if checked:
+                cb.setChecked(False)
+
+        self.noteChanged.emit()
 
     # --------------------------------
     # Helper
