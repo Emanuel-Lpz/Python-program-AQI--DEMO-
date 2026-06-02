@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         )
 
         self.resize(
-            1800,
+            900,
             1000
         )
 
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
         self.help_label.setWordWrap(True)
 
         self.help_label.setStyleSheet(
-            "color: gray; font-size:11px; padding:2px 4px 2px 4px; margin:0;"
+            "color: white; font-size:11px; padding:2px 4px 2px 4px; margin:0;"
         )
 
         self.help_label.setMaximumHeight(24)
