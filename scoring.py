@@ -247,6 +247,19 @@ def generate_report(
 
         report_lines.append("")
 
+    note_lines = []
+
+    for widgets in section_widgets.values():
+        for widget in widgets.values():
+            if hasattr(widget, "get_note_lines"):
+                note_lines.extend(
+                    widget.get_note_lines()
+                )
+
+    if note_lines:
+        report_lines.append("")
+        report_lines.extend(note_lines)
+
     return "\n".join(
         report_lines
     )

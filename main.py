@@ -14,7 +14,12 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QMessageBox,
     QScrollArea,
-    QFrame
+    QFrame,
+    QDialog,
+    QListWidget,
+    QListWidgetItem,
+    QPlainTextEdit,
+    QLineEdit
 )
 
 from aqi_data import AQI
@@ -232,6 +237,18 @@ class MainWindow(QMainWindow):
             copy_btn
         )
 
+        manage_notes_btn = QPushButton(
+            "Manage Notes"
+        )
+
+        manage_notes_btn.clicked.connect(
+            self.open_notes_manager
+        )
+
+        right_panel.addWidget(
+            manage_notes_btn
+        )
+
         # ------------------------------------------
         # AUTO REJECT
         # ------------------------------------------
@@ -357,6 +374,14 @@ class MainWindow(QMainWindow):
 
         if hasattr(
             widget,
+            "noteChanged"
+        ):
+            widget.noteChanged.connect(
+                self.refresh_report
+            )
+
+        if hasattr(
+            widget,
             "checks"
         ):
 
@@ -369,6 +394,22 @@ class MainWindow(QMainWindow):
                 cb.stateChanged.connect(
                     self.refresh_report
                 )
+
+                if hasattr(
+                    cb,
+                    "noteChanged"
+                ):
+                    cb.noteChanged.connect(
+                        self.refresh_report
+                    )
+
+                if hasattr(
+                    cb,
+                    "noteChanged"
+                ):
+                    cb.noteChanged.connect(
+                        self.refresh_report
+                    )
 
     # ==================================================
     # MISSING FIELDS
@@ -548,6 +589,22 @@ class MainWindow(QMainWindow):
         )
 
     # ==================================================
+    # NOTE MANAGER
+    # ==================================================
+
+    def open_notes_manager(
+        self
+    ):
+
+        dialog = NotesManagerDialog(
+            self,
+            self.section_widgets
+        )
+
+        dialog.exec()
+        self.refresh_report()
+
+    # ==================================================
     # VIEW TOGGLE
     # ==================================================
 
@@ -598,6 +655,217 @@ class MainWindow(QMainWindow):
 
         self.tabs.setCurrentIndex(0)
         self.refresh_report()
+
+
+class NoteEditorDialog(QDialog):
+
+    MAX_LENGTH = 200
+
+    def __init__(self, parent, title, note=""):
+
+        super().__init__(parent)
+
+        self.setWindowTitle(title)
+        self.setMinimumWidth(560)
+
+        layout = QVBoxLayout(self)
+
+        instructions = QLabel(
+            "Enter up to 200 characters for this note."
+        )
+
+        layout.addWidget(instructions)
+
+        self.text_edit = QLineEdit()
+        self.text_edit.setText(note)
+        self.text_edit.setMaxLength(self.MAX_LENGTH)
+        self.text_edit.textChanged.connect(self.update_count)
+        self.text_edit.returnPressed.connect(self.accept)
+
+        layout.addWidget(self.text_edit)
+
+        self.count_label = QLabel()
+        layout.addWidget(self.count_label)
+
+        button_layout = QHBoxLayout()
+        save_btn = QPushButton("Save")
+        cancel_btn = QPushButton("Cancel")
+
+        save_btn.setDefault(True)
+        save_btn.setAutoDefault(True)
+        cancel_btn.setAutoDefault(False)
+
+        cancel_btn.clicked.connect(self.reject)
+        save_btn.clicked.connect(self.accept)
+
+        button_layout.addStretch()
+        button_layout.addWidget(save_btn)
+        button_layout.addWidget(cancel_btn)
+
+        layout.addLayout(button_layout)
+
+        self.update_count()
+
+    def update_count(self):
+
+        text = self.text_edit.text()
+
+        if len(text) > self.MAX_LENGTH:
+            text = text[: self.MAX_LENGTH]
+            self.text_edit.blockSignals(True)
+            self.text_edit.setText(text)
+            self.text_edit.blockSignals(False)
+
+        self.count_label.setText(
+            f"{len(text)}/{self.MAX_LENGTH} characters"
+        )
+
+    def get_text(self):
+
+        return self.text_edit.text().strip()
+
+
+class NotesManagerDialog(QDialog):
+
+    def __init__(self, parent, section_widgets):
+
+        super().__init__(parent)
+
+        self.section_widgets = section_widgets
+
+        self.setWindowTitle("Manage Notes")
+        self.resize(600, 400)
+
+        layout = QVBoxLayout(self)
+
+        self.list_widget = QListWidget()
+        self.list_widget.currentItemChanged.connect(
+            self.update_preview
+        )
+
+        layout.addWidget(self.list_widget)
+
+        self.preview = QPlainTextEdit()
+        self.preview.setReadOnly(True)
+        self.preview.setFixedHeight(120)
+
+        layout.addWidget(QLabel("Selected note content:"))
+        layout.addWidget(self.preview)
+
+        button_layout = QHBoxLayout()
+        self.edit_btn = QPushButton("Edit")
+        self.delete_btn = QPushButton("Delete")
+        delete_all_btn = QPushButton("Delete All")
+        close_btn = QPushButton("Close")
+
+        self.edit_btn.clicked.connect(
+            self.edit_selected_note
+        )
+        self.delete_btn.clicked.connect(
+            self.delete_selected_note
+        )
+        delete_all_btn.clicked.connect(
+            self.delete_all_notes
+        )
+        close_btn.clicked.connect(self.accept)
+
+        button_layout.addWidget(self.edit_btn)
+        button_layout.addWidget(self.delete_btn)
+        button_layout.addWidget(delete_all_btn)
+        button_layout.addStretch()
+        button_layout.addWidget(close_btn)
+
+        layout.addLayout(button_layout)
+
+        self.refresh_list()
+
+    def refresh_list(self):
+
+        self.list_widget.clear()
+
+        for section_name, widgets in self.section_widgets.items():
+            for criterion, widget in widgets.items():
+                note = getattr(widget, "note", None)
+                if note:
+                    item = QListWidgetItem(
+                        f"{section_name} > {criterion}"
+                    )
+                    item.setData(
+                        Qt.UserRole,
+                        (section_name, criterion, widget)
+                    )
+                    self.list_widget.addItem(item)
+
+        self.update_preview()
+        self.update_buttons()
+
+    def update_buttons(self):
+
+        has_selection = (
+            self.list_widget.currentItem() is not None
+        )
+
+        self.edit_btn.setEnabled(has_selection)
+        self.delete_btn.setEnabled(has_selection)
+
+    def update_preview(self):
+
+        item = self.list_widget.currentItem()
+
+        if not item:
+            self.preview.setPlainText(
+                "No note selected."
+            )
+            self.update_buttons()
+            return
+
+        _, _, widget = item.data(Qt.UserRole)
+        self.preview.setPlainText(
+            getattr(widget, "note", "")
+        )
+        self.update_buttons()
+
+    def get_selected_widget(self):
+
+        item = self.list_widget.currentItem()
+
+        if not item:
+            return None
+
+        return item.data(Qt.UserRole)[2]
+
+    def edit_selected_note(self):
+
+        widget = self.get_selected_widget()
+        if widget is None:
+            return
+
+        dialog = NoteEditorDialog(
+            self,
+            f"Edit note for {widget.title}",
+            getattr(widget, "note", "")
+        )
+
+        if dialog.exec() == QDialog.Accepted:
+            widget.note = dialog.get_text() or None
+            self.refresh_list()
+
+    def delete_selected_note(self):
+
+        widget = self.get_selected_widget()
+        if widget is None:
+            return
+
+        widget.note = None
+        self.refresh_list()
+
+    def delete_all_notes(self):
+
+        for widgets in self.section_widgets.values():
+            for widget in widgets.values():
+                widget.note = None
+
+        self.refresh_list()
 
 
 # ======================================================
