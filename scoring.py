@@ -82,6 +82,7 @@ def check_auto_rejects(
                 for (
                     cb,
                     text,
+                    _,
                     _
                 ) in widget.checks:
 

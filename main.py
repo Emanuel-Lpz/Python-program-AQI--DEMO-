@@ -399,6 +399,7 @@ class MainWindow(QMainWindow):
             for (
                 cb,
                 _,
+                _,
                 _
             ) in widget.checks:
 
@@ -669,7 +670,7 @@ class MainWindow(QMainWindow):
 
                 if hasattr(widget, "checks"):
 
-                    for cb, _, _ in widget.checks:
+                    for cb, _, _, _ in widget.checks:
 
                         cb.setChecked(False)
 
