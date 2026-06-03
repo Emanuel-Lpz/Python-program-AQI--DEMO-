@@ -187,14 +187,18 @@ AQI = {
         },
 
         "Notes ID": {
-            "type": "dropdown",
+            "type": "checklist",
 
             "description":
                 "Populated if migrated.",
 
-            "options": [
-                ("Populated", 1),
-                ("Not populated", 0)
+            "not_applicable": (
+                "The KB was not migrated",
+                1
+            ),
+
+            "items": [
+                ("Populated", 1)
             ]
         },
 

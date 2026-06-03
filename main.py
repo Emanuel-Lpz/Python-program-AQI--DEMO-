@@ -26,7 +26,8 @@ from aqi_data import AQI
 
 from widgets import (
     DropdownWidget,
-    ChecklistWidget
+    ChecklistWidget,
+    CheckboxWidget
 )
 
 from scoring import (
@@ -316,6 +317,16 @@ class MainWindow(QMainWindow):
                         data
                     )
 
+                elif (
+                    data["type"]
+                    == "checkbox"
+                ):
+
+                    widget = CheckboxWidget(
+                        criterion,
+                        data
+                    )
+
                 else:
 
                     widget = ChecklistWidget(
@@ -410,6 +421,15 @@ class MainWindow(QMainWindow):
                     cb.noteChanged.connect(
                         self.refresh_report
                     )
+
+        if hasattr(
+            widget,
+            "checkbox"
+        ):
+
+            widget.checkbox.stateChanged.connect(
+                self.refresh_report
+            )
 
     # ==================================================
     # MISSING FIELDS

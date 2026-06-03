@@ -4,7 +4,7 @@ def get_max_score(data):
     for a criterion.
     """
 
-    if data["type"] == "dropdown":
+    if data["type"] in ("dropdown", "checkbox"):
 
         return max(
             score

@@ -258,6 +258,98 @@ class DropdownWidget(QWidget):
         return self.combo.currentData() is not None
 
 
+class CheckboxWidget(QWidget):
+
+    noteChanged = Signal()
+
+    def __init__(self, title, data):
+
+        super().__init__()
+
+        self.title = title
+        self.data = data
+        self.note = None
+
+        layout = QVBoxLayout(self)
+
+        title_label = HeaderLabel(
+            f"<b>{title}</b>"
+        )
+
+        title_label.noteRequested.connect(
+            self.prompt_note
+        )
+
+        layout.addWidget(title_label)
+
+        label, score = self.data["options"][0]
+
+        self.checkbox = QCheckBox(
+            f"{label} ({score:+d})"
+        )
+
+        layout.addWidget(self.checkbox)
+
+        desc = QLabel(
+            self.data["description"]
+        )
+
+        desc.setWordWrap(True)
+        desc.setStyleSheet("color: gray;")
+
+        layout.addWidget(desc)
+
+    def get_score(self):
+
+        if self.checkbox.isChecked():
+            return self.data["options"][0][1]
+
+        return 0
+
+    def get_max_score(self):
+
+        return max(
+            score
+            for _, score
+            in self.data["options"]
+        )
+
+    def prompt_note(self):
+
+        dialog = NoteDialog(
+            f"Add note for {self.title}",
+            self.note,
+            self
+        )
+
+        if dialog.exec() != QDialog.Accepted:
+            return
+
+        note = dialog.get_text()
+
+        self.note = note if note else None
+        self.noteChanged.emit()
+
+    def get_note_lines(self):
+
+        if not self.note:
+            return []
+
+        lost = self.get_score() - self.get_max_score()
+
+        return [
+            f"{self.title} ({lost:+d}) - {self.note}"
+        ]
+
+    def is_complete(self):
+
+        return True
+
+    def is_selected(self):
+
+        return True
+
+
 class ChecklistWidget(QWidget):
 
     noteChanged = Signal()
