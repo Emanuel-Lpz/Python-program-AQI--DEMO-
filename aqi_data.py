@@ -292,16 +292,6 @@ AQI = {
             "description":
                 "Other sections and tools used correctly.",
 
-            "not_applicable": (
-                "The KB does not include attachments",
-                2
-            ),
-
-            "not_applicable_items": [
-                "Attachments used correctly",
-                "Attachments referenced correctly"
-            ],
-
             "items": [
                 ("Other section used correctly", 1),
                 ("Additional Information used correctly", 1),

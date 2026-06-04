@@ -365,10 +365,6 @@ class ChecklistWidget(QWidget):
         self.checks = []
         self.not_applicable_checkbox = None
         self.not_applicable_data = data.get("not_applicable")
-        self.not_applicable_items = data.get(
-            "not_applicable_items",
-            []
-        )
 
         layout = QVBoxLayout(self)
 
@@ -423,57 +419,7 @@ class ChecklistWidget(QWidget):
 
         layout.addWidget(desc)
 
-        # ----------------------------
-        # Checklist items
-        # ----------------------------
-
-        auto_items = data.get(
-            "auto_reject_items",
-            []
-        )
-
-        primary_items = []
-        attachment_items = []
-
-        for text, score in data["items"]:
-            if text in self.not_applicable_items:
-                attachment_items.append((text, score))
-            else:
-                primary_items.append((text, score))
-
-        for text, score in primary_items:
-            cb = QCheckBox(
-                f"{text} ({score:+d})"
-            )
-
-            style = ""
-
-            if self.not_applicable_data:
-                style += "margin-left:18px;"
-
-            if text in auto_items:
-                style += f"color:{AUTO_REJECT_COLOR};"
-                cb.setToolTip(
-                    "AUTO-REJECT item.\n\n"
-                    "If this checkbox is not satisfied "
-                    "the KB must be rejected."
-                )
-
-            if style:
-                cb.setStyleSheet(style)
-
-            layout.addWidget(cb)
-
-            self.checks.append(
-                (
-                    cb,
-                    text,
-                    score,
-                    text in self.not_applicable_items
-                )
-            )
-
-        if self.not_applicable_data and self.not_applicable_items:
+        if self.not_applicable_data:
             na_label, na_score = self.not_applicable_data
             self.not_applicable_checkbox = QCheckBox(
                 f"{na_label} ({na_score:+d})"
@@ -486,9 +432,24 @@ class ChecklistWidget(QWidget):
             )
             layout.addWidget(self.not_applicable_checkbox)
 
-        for text, score in attachment_items:
+        # ----------------------------
+        # Checklist items
+        # ----------------------------
+
+        auto_items = data.get(
+            "auto_reject_items",
+            []
+        )
+
+        for text, score in data["items"]:
+
+            display_text = text
+
+            if text in auto_items:
+                display_text = text
+
             cb = QCheckBox(
-                f"{text} ({score:+d})"
+                f"{display_text} ({score:+d})"
             )
 
             style = ""
@@ -513,8 +474,7 @@ class ChecklistWidget(QWidget):
                 (
                     cb,
                     text,
-                    score,
-                    text in self.not_applicable_items
+                    score
                 )
             )
 
@@ -523,52 +483,20 @@ class ChecklistWidget(QWidget):
     # --------------------------------
 
     def get_score(self):
-        # If the parent "not applicable" box is checked, some checklists
-        # should award the not_applicable score AND still include any
-        # primary (non-attachment) checked items. If there are no
-        # not_applicable_items configured, treat the parent as replacing
-        # the whole checklist (legacy behaviour).
 
         if self.is_not_applicable():
-            parent_score = self.not_applicable_data[1]
-
-            # If there are specific items marked as 'not_applicable_items'
-            # only include primary (non-attachment) checked items in
-            # addition to the parent score.
-            if self.not_applicable_items:
-                extra = 0
-                for cb, _, points, is_attachment in self.checks:
-                    if not is_attachment and cb.isChecked():
-                        extra += points
-
-                return max(parent_score + extra, 0)
-
-            # Fallback: parent replaces entire checklist
-            return max(parent_score, 0)
+            return self.not_applicable_data[1]
 
         score = 0
 
-        for cb, _, points, _ in self.checks:
+        for cb, _, points in self.checks:
+
             if cb.isChecked():
                 score += points
 
         return max(score, 0)
 
     def get_max_score(self):
-        # When there are not_applicable_items defined, the maximum should
-        # reflect the parent not-applicable score plus the maximum of the
-        # primary (non-attachment) items. Otherwise sum all positive items
-        # (legacy behaviour).
-
-        if self.not_applicable_items:
-            parent = self.not_applicable_data[1] if self.not_applicable_data else 0
-            primary_max = sum(
-                score
-                for text, score in self.data["items"]
-                if score > 0 and text not in self.not_applicable_items
-            )
-
-            return parent + primary_max
 
         return sum(
             score
@@ -621,22 +549,16 @@ class ChecklistWidget(QWidget):
 
         return any(
             cb.isChecked()
-            for cb, _, _, _
+            for cb, _, _
             in self.checks
         )
 
     def on_not_applicable_toggled(self, checked):
 
-        for cb, _, _, is_attachment in self.checks:
-            if self.not_applicable_items:
-                if is_attachment:
-                    cb.setVisible(not checked)
-                    if checked:
-                        cb.setChecked(False)
-            else:
-                cb.setVisible(not checked)
-                if checked:
-                    cb.setChecked(False)
+        for cb, _, _ in self.checks:
+            cb.setVisible(not checked)
+            if checked:
+                cb.setChecked(False)
 
         self.noteChanged.emit()
 
@@ -648,7 +570,7 @@ class ChecklistWidget(QWidget):
 
         items = []
 
-        for cb, text, score, _ in self.checks:
+        for cb, text, score in self.checks:
 
             if cb.isChecked():
 
