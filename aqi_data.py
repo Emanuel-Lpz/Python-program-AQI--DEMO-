@@ -102,6 +102,7 @@ AQI = {
                 "The KB does not include images",
                 3
             ),
+            "not_applicable_bold": False,
 
             "items": [
                 ("Hosted correctly", 1),
@@ -196,6 +197,7 @@ AQI = {
                 "The KB was not migrated",
                 1
             ),
+            "not_applicable_bold": False,
 
             "items": [
                 ("Populated", 1)
@@ -292,10 +294,18 @@ AQI = {
             "description":
                 "Other sections and tools used correctly.",
 
+            "conditional_items": {
+                "The KB does not include attachments": [
+                    "Attachments used correctly",
+                    "Attachments referenced correctly"
+                ]
+            },
+
             "items": [
                 ("Other section used correctly", 1),
                 ("Additional Information used correctly", 1),
                 ("Relevant Related Links", 1),
+                ("The KB does not include attachments", 2),
                 ("Attachments used correctly", 1),
                 ("Attachments referenced correctly", 1)
             ]

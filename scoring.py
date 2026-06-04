@@ -121,8 +121,15 @@ def get_section_score(
 
 def get_section_max_score(
     section_name,
-    aqi
+    aqi,
+    widgets=None
 ):
+    if widgets is not None:
+        return sum(
+            widget.get_max_score()
+            for widget in widgets.values()
+        )
+
     total = 0
 
     for criterion_data in aqi[
@@ -211,9 +218,7 @@ def generate_report(
 
             score = widget.get_score()
 
-            max_score = get_max_score(
-                criterion_data
-            )
+            max_score = widget.get_max_score()
 
             section_score += score
 
@@ -239,9 +244,7 @@ def generate_report(
 
             score = widget.get_score()
 
-            max_score = get_max_score(
-                criterion_data
-            )
+            max_score = widget.get_max_score()
 
             report_lines.append(
                 f"- {criterion}: "
@@ -299,7 +302,8 @@ def generate_dashboard(
         section_max = (
             get_section_max_score(
                 section_name,
-                aqi
+                aqi,
+                widgets
             )
         )
 

@@ -365,6 +365,8 @@ class ChecklistWidget(QWidget):
         self.checks = []
         self.not_applicable_checkbox = None
         self.not_applicable_data = data.get("not_applicable")
+        self.conditional_items = data.get("conditional_items", {})
+        self.checkbox_map = {}
 
         layout = QVBoxLayout(self)
 
@@ -424,9 +426,10 @@ class ChecklistWidget(QWidget):
             self.not_applicable_checkbox = QCheckBox(
                 f"{na_label} ({na_score:+d})"
             )
-            self.not_applicable_checkbox.setStyleSheet(
-                "font-weight:bold;"
-            )
+            if self.data.get("not_applicable_bold", True):
+                self.not_applicable_checkbox.setStyleSheet(
+                    "font-weight:bold;"
+                )
             self.not_applicable_checkbox.toggled.connect(
                 self.on_not_applicable_toggled
             )
@@ -457,6 +460,12 @@ class ChecklistWidget(QWidget):
             if self.not_applicable_data:
                 style += "margin-left:18px;"
 
+            if any(
+                text in children
+                for children in self.conditional_items.values()
+            ):
+                style += "margin-left:18px;"
+
             if text in auto_items:
                 style += f"color:{AUTO_REJECT_COLOR};"
                 cb.setToolTip(
@@ -478,6 +487,16 @@ class ChecklistWidget(QWidget):
                 )
             )
 
+            self.checkbox_map[text] = cb
+
+            if text in self.conditional_items:
+                cb.stateChanged.connect(
+                    lambda checked, trigger=text: self.on_conditional_trigger_toggled(
+                        trigger,
+                        checked
+                    )
+                )
+
     # --------------------------------
     # Score
     # --------------------------------
@@ -498,10 +517,13 @@ class ChecklistWidget(QWidget):
 
     def get_max_score(self):
 
+        if self.is_not_applicable():
+            return self.not_applicable_data[1]
+
         return sum(
             score
-            for _, score in self.data["items"]
-            if score > 0
+            for cb, _, score in self.checks
+            if score > 0 and cb.isVisible()
         )
 
     def prompt_note(self):
@@ -556,6 +578,28 @@ class ChecklistWidget(QWidget):
     def on_not_applicable_toggled(self, checked):
 
         for cb, _, _ in self.checks:
+            cb.setVisible(not checked)
+            if checked:
+                cb.setChecked(False)
+
+        self.noteChanged.emit()
+
+    def on_conditional_trigger_toggled(
+        self,
+        trigger_text,
+        checked
+    ):
+
+        controlled_items = self.conditional_items.get(
+            trigger_text,
+            []
+        )
+
+        for item_text in controlled_items:
+            cb = self.checkbox_map.get(item_text)
+            if cb is None:
+                continue
+
             cb.setVisible(not checked)
             if checked:
                 cb.setChecked(False)
