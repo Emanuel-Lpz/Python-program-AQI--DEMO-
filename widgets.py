@@ -444,6 +444,13 @@ class ChecklistWidget(QWidget):
             []
         )
 
+        self.conditional_items_hidden_by_default = data.get(
+            "conditional_items_hidden_by_default",
+            False
+        )
+
+        self._default_hidden_items = set()
+
         for text, score in data["items"]:
 
             display_text = text
@@ -497,6 +504,18 @@ class ChecklistWidget(QWidget):
                     )
                 )
 
+        if self.conditional_items_hidden_by_default:
+            for trigger_text, controlled_items in self.conditional_items.items():
+                trigger_cb = self.checkbox_map.get(trigger_text)
+                if trigger_cb is None or trigger_cb.isChecked():
+                    continue
+
+                for item_text in controlled_items:
+                    cb = self.checkbox_map.get(item_text)
+                    if cb is not None:
+                        cb.setVisible(False)
+                        self._default_hidden_items.add(item_text)
+
     # --------------------------------
     # Score
     # --------------------------------
@@ -508,9 +527,13 @@ class ChecklistWidget(QWidget):
 
         score = 0
 
-        for cb, _, points in self.checks:
+        for cb, text, points in self.checks:
 
-            if cb.isChecked():
+            if (
+                points > 0
+                and self._is_item_logically_visible(text)
+                and cb.isChecked()
+            ):
                 score += points
 
         return max(score, 0)
@@ -522,9 +545,23 @@ class ChecklistWidget(QWidget):
 
         return sum(
             score
-            for cb, _, score in self.checks
-            if score > 0 and cb.isVisible()
+            for cb, text, score in self.checks
+            if score > 0 and self._is_item_logically_visible(text)
         )
+
+    def _is_item_logically_visible(self, item_text):
+        """Check if an item should be counted based on conditional logic."""
+        # Check if this item is controlled by any trigger
+        for trigger_text, controlled_items in self.conditional_items.items():
+            if item_text in controlled_items:
+                # Find the trigger checkbox
+                trigger_cb = self.checkbox_map.get(trigger_text)
+                if trigger_cb and trigger_cb.isChecked():
+                    # Trigger is checked, so controlled items are hidden
+                    return False
+                if item_text in self._default_hidden_items:
+                    return False
+        return True
 
     def prompt_note(self):
 
@@ -571,7 +608,8 @@ class ChecklistWidget(QWidget):
 
         return any(
             cb.isChecked()
-            for cb, _, _
+            and self._is_item_logically_visible(text)
+            for cb, text, _
             in self.checks
         )
 
@@ -603,6 +641,8 @@ class ChecklistWidget(QWidget):
             cb.setVisible(not checked)
             if checked:
                 cb.setChecked(False)
+            else:
+                self._default_hidden_items.discard(item_text)
 
         self.noteChanged.emit()
 

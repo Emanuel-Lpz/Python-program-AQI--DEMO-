@@ -301,6 +301,8 @@ AQI = {
                 ]
             },
 
+            "conditional_items_hidden_by_default": True,
+
             "items": [
                 ("Other section used correctly", 1),
                 ("Additional Information used correctly", 1),
