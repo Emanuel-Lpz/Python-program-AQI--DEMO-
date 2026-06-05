@@ -529,11 +529,8 @@ class ChecklistWidget(QWidget):
 
         for cb, text, points in self.checks:
 
-            if (
-                points > 0
-                and self._is_item_logically_visible(text)
-                and cb.isChecked()
-            ):
+            # Include negative-point items (deductions) when checked.
+            if self._is_item_logically_visible(text) and cb.isChecked():
                 score += points
 
         return max(score, 0)
