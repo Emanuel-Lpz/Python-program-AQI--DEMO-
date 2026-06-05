@@ -551,6 +551,15 @@ class ChecklistWidget(QWidget):
 
     def _is_item_logically_visible(self, item_text):
         """Check if an item should be counted based on conditional logic."""
+        # If this item is itself a trigger (e.g. "The KB does not include attachments"),
+        # it only counts when checked. When unchecked (attachments present), the trigger
+        # should not contribute to the max score.
+        if item_text in self.conditional_items:
+            trigger_cb = self.checkbox_map.get(item_text)
+            if trigger_cb is None:
+                return True
+            return trigger_cb.isChecked()
+
         # Check if this item is controlled by any trigger
         for trigger_text, controlled_items in self.conditional_items.items():
             if item_text in controlled_items:
@@ -561,6 +570,7 @@ class ChecklistWidget(QWidget):
                     return False
                 if item_text in self._default_hidden_items:
                     return False
+
         return True
 
     def prompt_note(self):
