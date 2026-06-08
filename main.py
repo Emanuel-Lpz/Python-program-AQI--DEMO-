@@ -673,6 +673,28 @@ class MainWindow(QMainWindow):
 
                         cb.setChecked(False)
 
+                    # If there is a 'not applicable' checkbox, reset it too
+                    if hasattr(widget, "not_applicable_checkbox") and widget.not_applicable_checkbox is not None:
+                        widget.not_applicable_checkbox.setChecked(False)
+
+                    # Restore visibility for conditional items: show all then re-hide defaults
+                    if hasattr(widget, "checkbox_map"):
+                        for item_text, cb in widget.checkbox_map.items():
+                            try:
+                                cb.setVisible(True)
+                            except Exception:
+                                pass
+
+                        if hasattr(widget, "_default_hidden_items"):
+                            for item_text in widget._default_hidden_items:
+                                cb = widget.checkbox_map.get(item_text)
+                                if cb is not None:
+                                    cb.setVisible(False)
+
+                if hasattr(widget, "checkbox"):
+
+                    widget.checkbox.setChecked(False)
+
                 if hasattr(widget, "note"):
 
                     widget.note = None
