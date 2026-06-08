@@ -673,6 +673,10 @@ class MainWindow(QMainWindow):
 
                         cb.setChecked(False)
 
+                if hasattr(widget, "note"):
+
+                    widget.note = None
+
         self.tabs.setCurrentIndex(0)
         self.refresh_report()
 

@@ -234,8 +234,9 @@ class DropdownWidget(QWidget):
 
         lost = self.get_score() - self.get_max_score()
 
+        title_text = self.title if lost == 0 else f"{self.title} ({lost:+d})"
         return [
-            f"{self.title} ({lost:+d}) - {self.note}"
+            f"{title_text} - {self.note}"
         ]
 
     # --------------------------------
@@ -337,8 +338,9 @@ class CheckboxWidget(QWidget):
 
         lost = self.get_score() - self.get_max_score()
 
+        title_text = self.title if lost == 0 else f"{self.title} ({lost:+d})"
         return [
-            f"{self.title} ({lost:+d}) - {self.note}"
+            f"{title_text} - {self.note}"
         ]
 
     def is_complete(self):
@@ -593,8 +595,9 @@ class ChecklistWidget(QWidget):
 
         lost = self.get_score() - self.get_max_score()
 
+        title_text = self.title if lost == 0 else f"{self.title} ({lost:+d})"
         return [
-            f"{self.title} ({lost:+d}) - {self.note}"
+            f"{title_text} - {self.note}"
         ]
 
     # --------------------------------
