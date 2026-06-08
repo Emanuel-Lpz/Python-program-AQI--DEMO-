@@ -322,6 +322,19 @@ def generate_dashboard(
         f"{total_score}/{total_max}"
     )
 
+    note_lines = []
+
+    for widgets in section_widgets.values():
+        for widget in widgets.values():
+            if hasattr(widget, "get_note_lines"):
+                note_lines.extend(
+                    widget.get_note_lines()
+                )
+
+    if note_lines:
+        lines.append("")
+        lines.extend(note_lines)
+
     return "\n".join(
         lines
     )
