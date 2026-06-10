@@ -85,28 +85,23 @@ class MainWindow(QMainWindow):
 
         left_panel = QVBoxLayout()
 
-        self.format_toggle = QCheckBox(
-            "How-to KB format"
+        # Single clickable badge that shows current format and acts as the toggle
+        self.format_badge = QPushButton(
+            "Troubleshooting KB"
         )
-        self.format_toggle.setToolTip(
-            "Toggle between Troubleshooting and How-to evaluation formats."
+        self.format_badge.setCheckable(True)
+        self.format_badge.setToolTip(
+            "Click to switch between Troubleshooting and How-to formats."
         )
-        self.format_toggle.toggled.connect(
+        self.format_badge.toggled.connect(
             self.on_format_toggle
         )
-
-        self.format_label = QLabel(
-            "Current format: Troubleshooting"
-        )
-        self.format_label.setStyleSheet(
-            "font-weight:bold;"
+        self.format_badge.setStyleSheet(
+            self.get_format_button_style()
         )
 
         left_panel.addWidget(
-            self.format_toggle
-        )
-        left_panel.addWidget(
-            self.format_label
+            self.format_badge
         )
 
         self.tabs = QTabWidget()
@@ -317,6 +312,7 @@ class MainWindow(QMainWindow):
         # BUILD TABS
         # ==================================================
 
+        self.update_format_label()
         self.build_tabs()
 
     # ==================================================
@@ -724,13 +720,50 @@ class MainWindow(QMainWindow):
         self
     ):
 
-        label_text = (
-            "How-to" if self.current_format == "HOWTO"
-            else "Troubleshooting"
+        if self.current_format == "HOWTO":
+            self.format_badge.setText(
+                "How-to KB"
+            )
+            self.format_badge.setStyleSheet(
+                "font-weight:bold; color:#ffffff; "
+                "background:#00897b; padding:6px 10px; "
+                "border-radius:10px;"
+            )
+        else:
+            self.format_badge.setText(
+                "Troubleshooting KB"
+            )
+            self.format_badge.setStyleSheet(
+                "font-weight:bold; color:#ffffff; "
+                "background:#1565c0; padding:6px 10px; "
+                "border-radius:10px;"
+            )
+
+        self.format_badge.setChecked(
+            self.current_format == "HOWTO"
         )
 
-        self.format_label.setText(
-            f"Current format: {label_text}"
+    def get_format_button_style(
+        self
+    ):
+
+        return (
+            "QPushButton {"
+            "border:2px solid #666;"
+            "border-radius:18px;"
+            "padding:10px 18px;"
+            "background-color:#2a2a2a;"
+            "color:#ffffff;"
+            "font-weight:bold;"
+            "}"
+            "QPushButton:checked {"
+            "background-color:#00ad7c;"
+            "border-color:#00ad7c;"
+            "color:#ffffff;"
+            "}"
+            "QPushButton:hover {"
+            "background-color:#333333;"
+            "}"
         )
 
     def has_evaluation_started(
@@ -778,11 +811,11 @@ class MainWindow(QMainWindow):
             )
 
             if answer != QMessageBox.StandardButton.Yes:
-                self.format_toggle.blockSignals(True)
-                self.format_toggle.setChecked(
+                self.format_badge.blockSignals(True)
+                self.format_badge.setChecked(
                     self.current_format == "HOWTO"
                 )
-                self.format_toggle.blockSignals(False)
+                self.format_badge.blockSignals(False)
                 return
 
         self.current_format = new_format
