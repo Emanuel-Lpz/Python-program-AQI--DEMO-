@@ -22,7 +22,10 @@ from PySide6.QtWidgets import (
     QLineEdit
 )
 
-from aqi_data import AQI
+from aqi_data import (
+    AQI,
+    AQI_HOWTO
+)
 
 from widgets import (
     DropdownWidget,
@@ -34,7 +37,8 @@ from scoring import (
     generate_report,
     generate_dashboard,
     check_auto_rejects,
-    get_total_score
+    get_total_score,
+    get_total_max
 )
 
 
@@ -54,6 +58,8 @@ class MainWindow(QMainWindow):
         )
 
         self.section_widgets = {}
+        self.current_aqi = AQI
+        self.current_format = "TROUBLESHOOTING"
 
         self.build_ui()
 
@@ -78,6 +84,30 @@ class MainWindow(QMainWindow):
         # ------------------------------------------
 
         left_panel = QVBoxLayout()
+
+        self.format_toggle = QCheckBox(
+            "How-to KB format"
+        )
+        self.format_toggle.setToolTip(
+            "Toggle between Troubleshooting and How-to evaluation formats."
+        )
+        self.format_toggle.toggled.connect(
+            self.on_format_toggle
+        )
+
+        self.format_label = QLabel(
+            "Current format: Troubleshooting"
+        )
+        self.format_label.setStyleSheet(
+            "font-weight:bold;"
+        )
+
+        left_panel.addWidget(
+            self.format_toggle
+        )
+        left_panel.addWidget(
+            self.format_label
+        )
 
         self.tabs = QTabWidget()
 
@@ -287,83 +317,7 @@ class MainWindow(QMainWindow):
         # BUILD TABS
         # ==================================================
 
-        for (
-            section_name,
-            section_data
-        ) in AQI.items():
-
-            page = QWidget()
-
-            page_layout = QVBoxLayout(
-                page
-            )
-
-            self.section_widgets[
-                section_name
-            ] = {}
-
-            for (
-                criterion,
-                data
-            ) in section_data.items():
-
-                if (
-                    data["type"]
-                    == "dropdown"
-                ):
-
-                    widget = DropdownWidget(
-                        criterion,
-                        data
-                    )
-
-                elif (
-                    data["type"]
-                    == "checkbox"
-                ):
-
-                    widget = CheckboxWidget(
-                        criterion,
-                        data
-                    )
-
-                else:
-
-                    widget = ChecklistWidget(
-                        criterion,
-                        data
-                    )
-
-                page_layout.addWidget(
-                    widget
-                )
-
-                self.section_widgets[
-                    section_name
-                ][criterion] = widget
-
-                self.connect_widget(
-                    widget
-                )
-
-            page_layout.addStretch()
-
-            scroll = QScrollArea()
-
-            scroll.setWidgetResizable(
-                True
-            )
-
-            scroll.setWidget(
-                page
-            )
-
-            self.tabs.addTab(
-                scroll,
-                section_name
-            )
-
-        self.refresh_report()
+        self.build_tabs()
 
     # ==================================================
     # SIGNALS
@@ -500,25 +454,35 @@ class MainWindow(QMainWindow):
 
         report = generate_report(
             self.section_widgets,
-            AQI
+            self.current_aqi
         )
 
         dashboard = generate_dashboard(
             self.section_widgets,
-            AQI
+            self.current_aqi
         )
 
         total_score = get_total_score(
             self.section_widgets
         )
 
+        total_max = get_total_max(
+            self.section_widgets,
+            self.current_aqi
+        )
+
         self.score_label.setText(
             f"AQI SCORE: "
-            f"{total_score}/100"
+            f"{total_score}/{total_max}"
+        )
+
+        percent_score = (
+            total_score / total_max * 100
+            if total_max else 0
         )
 
         self.update_score_color(
-            total_score
+            percent_score
         )
 
         self.detailed_text = report
@@ -532,7 +496,7 @@ class MainWindow(QMainWindow):
 
         errors = check_auto_rejects(
             self.section_widgets,
-            AQI
+            self.current_aqi
         )
 
         if errors:
@@ -701,6 +665,132 @@ class MainWindow(QMainWindow):
 
         self.tabs.setCurrentIndex(0)
         self.refresh_report()
+
+
+    # ==================================================
+    # FORMAT SWITCH
+    # ==================================================
+
+    def build_tabs(
+        self
+    ):
+
+        self.section_widgets = {}
+        self.tabs.clear()
+
+        for (
+            section_name,
+            section_data
+        ) in self.current_aqi.items():
+
+            page = QWidget()
+            page_layout = QVBoxLayout(page)
+            self.section_widgets[section_name] = {}
+
+            for (
+                criterion,
+                data
+            ) in section_data.items():
+
+                if data["type"] == "dropdown":
+                    widget = DropdownWidget(
+                        criterion,
+                        data
+                    )
+                elif data["type"] == "checkbox":
+                    widget = CheckboxWidget(
+                        criterion,
+                        data
+                    )
+                else:
+                    widget = ChecklistWidget(
+                        criterion,
+                        data
+                    )
+
+                page_layout.addWidget(widget)
+                self.section_widgets[section_name][criterion] = widget
+                self.connect_widget(widget)
+
+            page_layout.addStretch()
+            scroll = QScrollArea()
+            scroll.setWidgetResizable(True)
+            scroll.setWidget(page)
+            self.tabs.addTab(scroll, section_name)
+
+        self.refresh_report()
+
+    def update_format_label(
+        self
+    ):
+
+        label_text = (
+            "How-to" if self.current_format == "HOWTO"
+            else "Troubleshooting"
+        )
+
+        self.format_label.setText(
+            f"Current format: {label_text}"
+        )
+
+    def has_evaluation_started(
+        self
+    ):
+
+        for widgets in self.section_widgets.values():
+            for widget in widgets.values():
+                if hasattr(widget, "combo"):
+                    if widget.combo.currentIndex() != 0:
+                        return True
+                if hasattr(widget, "checkbox"):
+                    if widget.checkbox.isChecked():
+                        return True
+                if hasattr(widget, "checks"):
+                    if getattr(widget, "is_not_applicable", lambda: False)():
+                        return True
+                    for cb, _, _ in widget.checks:
+                        if cb.isChecked():
+                            return True
+                if hasattr(widget, "note") and widget.note:
+                    return True
+
+        return False
+
+    def on_format_toggle(
+        self,
+        checked
+    ):
+
+        new_format = (
+            "HOWTO" if checked else "TROUBLESHOOTING"
+        )
+
+        if new_format == self.current_format:
+            return
+
+        if self.has_evaluation_started():
+            answer = QMessageBox.question(
+                self,
+                "Confirm Format Switch",
+                "Changing the KB format will reset the current evaluation. Continue?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                QMessageBox.StandardButton.No
+            )
+
+            if answer != QMessageBox.StandardButton.Yes:
+                self.format_toggle.blockSignals(True)
+                self.format_toggle.setChecked(
+                    self.current_format == "HOWTO"
+                )
+                self.format_toggle.blockSignals(False)
+                return
+
+        self.current_format = new_format
+        self.current_aqi = (
+            AQI_HOWTO if new_format == "HOWTO" else AQI
+        )
+        self.update_format_label()
+        self.build_tabs()
 
 
 class NoteEditorDialog(QDialog):

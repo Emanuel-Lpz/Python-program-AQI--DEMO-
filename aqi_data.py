@@ -445,3 +445,106 @@ AQI = {
         }
     }
 }
+
+AQI_HOWTO = {
+    "UNIQUE": AQI["UNIQUE"],
+    "GENERAL": AQI["GENERAL"],
+    "METADATA": AQI["METADATA"],
+    "TITLE": AQI["TITLE"],
+    "CONTEXT": {
+        "Optional Sections": {
+            "type": "dropdown",
+            "description": (
+                "Other, Results, Example, Next Steps, Related Links, "
+                "and Attachments used correctly."
+            ),
+            "options": [
+                ("All optional sections used correctly", 4),
+                ("Some used correctly", 2),
+                ("None are used correctly", 0)
+            ]
+        },
+        "Results": {
+            "type": "checkbox",
+            "description": "Correct end of the task.",
+            "options": [
+                ("Correct end of the task", 1)
+            ]
+        },
+        "Next Steps": {
+            "type": "checkbox",
+            "description": "Concisely formatted.",
+            "options": [
+                ("Concisely formatted", 1)
+            ]
+        },
+        "Related Links": {
+            "type": "checkbox",
+            "description": "Relevant.",
+            "options": [
+                ("Relevant", 1)
+            ]
+        },
+        "Attachments": {
+            "type": "checkbox",
+            "description": "Referenced/Named Correctly.",
+            "options": [
+                ("Referenced/Named Correctly", 1)
+            ]
+        },
+        "Overview": {
+            "type": "checklist",
+            "description": "Overview evaluation.",
+            "items": [
+                ("Full task is clearly stated", 6),
+                (
+                    "Prerequisite knowledge given, if appropiate, and is specific",
+                    1
+                ),
+                (
+                    "Environment requirements clearly specified",
+                    4
+                ),
+                ("Correct format POV", 1)
+            ]
+        }
+    },
+    "STEPS": {
+        "Complete steps": {
+            "type": "dropdown",
+            "description": "Step completeness evaluation.",
+            "options": [
+                ("No extra information needed to be successful", 8),
+                ("Extra information needed", 5),
+                ("Incomplete information", 2)
+            ]
+        },
+        "Relevant & Concise": {
+            "type": "checklist",
+            "description": "Steps relevance evaluation.",
+            "items": [
+                ("Objective set in overview is reached", 3),
+                ("The most important information is available in steps.", 2)
+            ]
+        },
+        "Images": {
+            "type": "checklist",
+            "description": "Images support evaluation.",
+            "items": [
+                ("Relevant, add context to the steps", 2),
+                ("Complementary to the steps", 2),
+                ("Showcase the information needed for a user to be successful", 1)
+            ]
+        },
+        "Formatting": {
+            "type": "checklist",
+            "description": "Steps formatting evaluation.",
+            "items": [
+                ("Bullets/numbers used appropriately", 3),
+                ("Headers used appropriately", 1),
+                ("Command-based steps, Action voice", 2),
+                ("Predetermined text used appropriately", 1)
+            ]
+        }
+    }
+}

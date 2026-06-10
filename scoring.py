@@ -161,6 +161,22 @@ def get_total_score(
     return total
 
 
+def get_total_max(
+    section_widgets,
+    aqi
+):
+    total = 0
+
+    for section_name, widgets in section_widgets.items():
+        total += get_section_max_score(
+            section_name,
+            aqi,
+            widgets
+        )
+
+    return total
+
+
 # --------------------------------------------------
 # REPORT
 # --------------------------------------------------
@@ -175,6 +191,10 @@ def generate_report(
     """
 
     total_score = 0
+    total_max = get_total_max(
+        section_widgets,
+        aqi
+    )
 
     report_lines = []
 
@@ -189,7 +209,7 @@ def generate_report(
         )
 
     report_lines.append(
-        f"AQI SCORE: {total_score}/100"
+        f"AQI SCORE: {total_score}/{total_max}"
     )
 
     report_lines.append("")
